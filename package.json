@@ -1,0 +1,11 @@
+{
+  "name": "virtualFileClient",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/codePlaceOfficial/virtualFileClient.git",
+  "author": "codePlaceOfficial <codeplace@yeah.net>",
+  "license": "MIT",
+  "dependencies": {
+    "path-browserify": "^1.0.1"
+  }
+}
