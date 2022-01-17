@@ -2,7 +2,7 @@ const util = require('util')
 var path = require('path');
 const FILE_TYPE = { dir: "DIR", file: "FILE" };
 const virtualFileBuilder = require("./virtualFileBuilder");
-
+const {join} = require("../util/path")
 class VirtualFileClient {
     constructor(){
         this.LABEL = "_client" // 用于事件标识
@@ -41,12 +41,12 @@ class VirtualFileClient {
         }
 
         let { targetObj, fatherObj } = this.__getFileObjByPath(virtualPath)
-        targetObj.children.push(virtualFileBuilder.__buildVirtualFile(FILE_TYPE.dir, dirName, path.join(virtualPath, dirName)));
+        targetObj.children.push(virtualFileBuilder.__buildVirtualFile(FILE_TYPE.dir, dirName, join(virtualPath, dirName)));
     }
 
     createFile(virtualPath, fileName) {
         let { targetObj, fatherObj } = this.__getFileObjByPath(virtualPath)
-        targetObj.children.push(virtualFileBuilder.__buildVirtualFile(FILE_TYPE.file, fileName, path.join(virtualPath, fileName)));
+        targetObj.children.push(virtualFileBuilder.__buildVirtualFile(FILE_TYPE.file, fileName, join(virtualPath, fileName)));
     }
 
     changeFileContent(relativePath, newContent) {
@@ -58,7 +58,7 @@ class VirtualFileClient {
     renameFile(relativePath, newName) {
         let { targetObj, fatherObj } = this.__getFileObjByPath(relativePath)
         // 改名同时更改路径
-        _.assign(targetObj, { name: newName, __path: path.join(fatherObj.__path, newName) })
+        _.assign(targetObj, { name: newName, __path: join(fatherObj.__path, newName) })
     }
 
     // 文件移动位置
