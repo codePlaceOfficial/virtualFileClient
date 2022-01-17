@@ -6,6 +6,6 @@
   "author": "codePlaceOfficial <codeplace@yeah.net>",
   "license": "MIT",
   "dependencies": {
-    "path-browserify": "^1.0.1"
+    "loadsh": "^0.0.4"
   }
 }

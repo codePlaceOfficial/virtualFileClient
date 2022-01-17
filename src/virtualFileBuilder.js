@@ -9,7 +9,7 @@ module.exports = {
             // __fatherPath:fatherPath,
             __path: virtualPath
         };
-        if (type == FILE_TYPE.dir) virtualFile.children = [];
+        if (type === FILE_TYPE.dir) virtualFile.children = [];
         return virtualFile;
     },
 
