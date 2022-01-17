@@ -10,9 +10,9 @@ class VirtualFileClient {
         // 不需要再加前缀来区分事件，但是为了方便测试，还是加上了
     }
 
-    // showVirtualFile() {
-    //     console.log(util.inspect(this.virtualFileObj, { showHidden: false, depth: null }));
-    // }
+    getVirtualFile() {
+        return this.virtualFileObj;
+    }
 
     /** 
      * ================================================
@@ -94,7 +94,7 @@ class VirtualFileClient {
         for (let index in names) {
             for (let json of root.children) {
                 if (json.name === names[index]) {
-                    if (index === names.length - 1) {
+                    if (Number(index) === (names.length - 1)) {
                         targetObj = json
                         break;
                     }
