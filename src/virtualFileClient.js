@@ -11,7 +11,7 @@ class VirtualFileClient {
     }
 
     getVirtualFile() {
-        return this.virtualFileObj;
+        return _.cloneDeep(this.virtualFileObj);
     }
 
     /** 
@@ -46,6 +46,8 @@ class VirtualFileClient {
 
     createFile(virtualPath, fileName) {
         let { targetObj } = this.__getFileObjByPath(virtualPath)
+        console.log(this.virtualFileObj)
+        console.log(virtualPath)
         targetObj.children.push(virtualFileBuilder.__buildVirtualFile(FILE_TYPE.file, fileName, join(virtualPath, fileName)));
     }
 
