@@ -46,8 +46,6 @@ class VirtualFileClient {
 
     createFile(virtualPath, fileName) {
         let { targetObj } = this.__getFileObjByPath(virtualPath)
-        console.log(this.virtualFileObj)
-        console.log(virtualPath)
         targetObj.children.push(virtualFileBuilder.__buildVirtualFile(FILE_TYPE.file, fileName, join(virtualPath, fileName)));
     }
 
@@ -87,9 +85,8 @@ class VirtualFileClient {
     }
 
     // 通过文件的相对地址得到文件对象和其父对象
-    __getFileObjByPath(path) {
+    __getFileObjByPath(path,root=this.virtualFileObj) {
         let names = path.split("/");
-        let root = this.virtualFileObj;
         if (path === "/") return { targetObj: root, fatherObj: root };
 
         let targetObj = undefined;
