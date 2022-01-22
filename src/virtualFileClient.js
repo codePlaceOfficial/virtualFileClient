@@ -58,8 +58,8 @@ const createFile = (virtualPath, fileName, virtualFiles) => {
     targetObj.children.push(virtualFileBuilder.__buildVirtualFile(FILE_TYPE.file, fileName, join(virtualPath, fileName)));
 }
 
-const changeFileContent = (relativePath, newContent, virtualFiles) => {
-    let { targetObj } = getVirtualFileByPath(relativePath, virtualFiles)
+const changeFileContent = (virtualPath, newContent, virtualFiles) => {
+    let { targetObj } = getVirtualFileByPath(virtualPath, virtualFiles)
     targetObj.content = newContent;
 }
 
@@ -119,13 +119,15 @@ class VirtualFileClient {
         this.virtualFiles = virtualFiles;
     }
     getFileContent = (relativePath) => getFileContent(relativePath, this.virtualFiles)
-    setFileContent = (relativePath, content) => setFileContent(relativePath, content, this.virtualFiles)
-    createDir = (virtualPath, dirName) => createDir(virtualPath, dirName, this.virtualFiles)
-    createFile = (virtualPath, fileName,) => createFile(virtualPath, fileName, this.virtualFiles)
-    changeFileContent = (relativePath, newContent) => changeFileContent(relativePath, newContent, this.virtualFiles)
-    renameFile = (relativePath, newName) => renameFile(relativePath, newName, this.virtualFiles)
-    moveFile = (relativePath, newPath) => moveFile(relativePath, newPath, this.virtualFiles)
-    deleteFile = (relativePath) => deleteFile(relativePath, this.virtualFiles)
+    setFileContent = ({ virtualPath, content }) => {
+        setFileContent(virtualPath, content, this.virtualFiles)
+    }
+    createDir = ({ virtualPath, dirName }) => createDir(virtualPath, dirName, this.virtualFiles)
+    createFile = ({ virtualPath, fileName }) => createFile(virtualPath, fileName, this.virtualFiles)
+    changeFileContent = ({ virtualPath, content }) => changeFileContent(virtualPath, content, this.virtualFiles)
+    renameFile = ({ virtualPath, newName }) => renameFile(virtualPath, newName, this.virtualFiles)
+    moveFile = ({ virtualPath, newPath }) => moveFile(virtualPath, newPath, this.virtualFiles)
+    deleteFile = ({ virtualPath }) => deleteFile(virtualPath, this.virtualFiles)
 }
 
 
