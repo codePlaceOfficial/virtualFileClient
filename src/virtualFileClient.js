@@ -1,17 +1,113 @@
 // const util = require('util')
 const FILE_TYPE = { dir: "DIR", file: "FILE" };
 const virtualFileBuilder = require("./virtualFileBuilder");
-const {join} = require("../util/path")
+const { join } = require("../util/path")
 const _ = require("loadsh");
+
+/** 
+ * ================================================
+ * 虚拟文件的操作 ===================================
+ * ================================================
+ */
+const getVirtualFileByPath = (path, root) => {
+    let names = path.split("/");
+    if (path === "/") return { targetObj: root, fatherObj: root };
+
+    let targetObj = undefined;
+    for (let index in names) {
+        for (let json of root.children) {
+            if (json.name === names[index]) {
+                if (Number(index) === (names.length - 1)) {
+                    targetObj = json
+                    break;
+                }
+                if (json.children !== undefined) {
+                    root = json;
+                    break;
+                }
+            }
+        }
+    }
+    return { targetObj, fatherObj: root };
+}
+
+// 得到文件内容
+const getFileContent = (relativePath, virtualFiles) => {
+    let { targetObj } = getVirtualFileByPath(relativePath, virtualFiles)
+    return targetObj.content;
+}
+
+const setFileContent = (relativePath, content, virtualFiles) => {
+    let { targetObj } = getVirtualFileByPath(relativePath, virtualFiles)
+    targetObj.content = content;
+}
+
+const createDir = (virtualPath, dirName, virtualFiles) => {
+    if (virtualPath === "/" && dirName === "") {
+        virtualFileBuilder.buildRootDir(virtualFiles)
+        console.log(virtualFiles);
+        // virtualFiles = _.assign(virtualFiles, virtualFileBuilder.buildRootDir()); //构造根文件
+    } else {
+        let { targetObj } = getVirtualFileByPath(virtualPath, virtualFiles)
+        targetObj.children.push(virtualFileBuilder.__buildVirtualFile(FILE_TYPE.dir, dirName, join(virtualPath, dirName)));
+    }
+}
+
+const createFile = (virtualPath, fileName, virtualFiles) => {
+    let { targetObj } = getVirtualFileByPath(virtualPath, virtualFiles)
+    targetObj.children.push(virtualFileBuilder.__buildVirtualFile(FILE_TYPE.file, fileName, join(virtualPath, fileName)));
+}
+
+const changeFileContent = (relativePath, newContent, virtualFiles) => {
+    let { targetObj } = getVirtualFileByPath(relativePath, virtualFiles)
+    targetObj.content = newContent;
+}
+
+// 文件重命名
+const renameFile = (relativePath, newName, virtualFiles) => {
+    let { targetObj, fatherObj } = getVirtualFileByPath(relativePath, virtualFiles)
+    // 改名同时更改路径
+    targetObj.name = newName
+    targetObj.__path = join(fatherObj.__path, newName)
+    // 不用assign,否则会和immer产生冲突
+    // _.assign(targetObj, { name: newName, __path: join(fatherObj.__path, newName) })
+}
+
+// 文件移动位置
+// newPath为其父文件的位置
+const moveFile = (relativePath, newPath, virtualFiles) => {
+    let { targetObj } = getVirtualFileByPath(newPath, virtualFiles);
+    let beMoveObj = this.deleteFile(relativePath); // 待移动的数据
+    beMoveObj.__path = join(newPath, beMoveObj.name); // 构建新的路径
+    targetObj.children.push(beMoveObj);
+}
+
+// 文件删除
+const deleteFile = (relativePath, virtualFiles) => {
+    let { targetObj, fatherObj } = getVirtualFileByPath(relativePath, virtualFiles);
+
+    if (fatherObj === undefined) return; // 根文件无法删除
+    for (let index in fatherObj.children) {
+        // console.log(fatherObj.children[index].__path)
+        if (fatherObj.children[index].__path === relativePath) {
+            fatherObj.children.splice(index, 1)
+            return targetObj;
+        }
+    }
+}
+
+
 class VirtualFileClient {
-    constructor(){
+    constructor() {
         this.LABEL = "_client" // 用于事件标识
         // 其实理论上不需言，因为实际应用时client和server应处于不同的环境，
         // 不需要再加前缀来区分事件，但是为了方便测试，还是加上了
+
+        this.virtualFiles = {}
     }
 
     getVirtualFile() {
-        return _.cloneDeep(this.virtualFileObj);
+        return _.cloneDeep(this.virtualFiles);
     }
 
     /** 
@@ -19,97 +115,28 @@ class VirtualFileClient {
      * 虚拟文件的操作 ===================================
      * ================================================
      * */
-    resetVirtualFile(virtualFileObj) {
-        this.virtualFileObj = virtualFileObj;
+    resetVirtualFile(virtualFiles) {
+        this.virtualFiles = virtualFiles;
     }
-
-    // 得到文件内容
-    getFileContent(relativePath) {
-        let { targetObj } = this.__getFileObjByPath(relativePath)
-        return targetObj.content;
-    }
-
-    setFileContent(relativePath, content){
-        let { targetObj } = this.__getFileObjByPath(relativePath)
-        targetObj.content = content;
-    }
-
-    createDir(virtualPath, dirName) {
-        if (virtualPath === "/" && dirName === "") {
-            this.virtualFileObj = virtualFileBuilder.buildRootDir(); //构造根文件
-            return;
-        }
-
-        let { targetObj } = this.__getFileObjByPath(virtualPath)
-        targetObj.children.push(virtualFileBuilder.__buildVirtualFile(FILE_TYPE.dir, dirName, join(virtualPath, dirName)));
-    }
-
-    createFile(virtualPath, fileName) {
-        let { targetObj } = this.__getFileObjByPath(virtualPath)
-        targetObj.children.push(virtualFileBuilder.__buildVirtualFile(FILE_TYPE.file, fileName, join(virtualPath, fileName)));
-    }
-
-    changeFileContent(relativePath, newContent) {
-        let { targetObj } = this.__getFileObjByPath(relativePath)
-        targetObj.content = newContent;
-    }
-
-    // 文件重命名
-    renameFile(relativePath, newName) {
-        let { targetObj, fatherObj } = this.__getFileObjByPath(relativePath)
-        // 改名同时更改路径
-        _.assign(targetObj, { name: newName, __path: join(fatherObj.__path, newName) })
-    }
-
-    // 文件移动位置
-    // newPath为其父文件的位置
-    moveFile(relativePath, newPath) {
-        let { targetObj } = this.__getFileObjByPath(newPath);
-        let beMoveObj = this.deleteFile(relativePath); // 待移动的数据
-        beMoveObj.__path = join(newPath, beMoveObj.name); // 构建新的路径
-        targetObj.children.push(beMoveObj);
-    }
-
-    // 文件删除
-    deleteFile(relativePath) {
-        let { targetObj, fatherObj } = this.__getFileObjByPath(relativePath);
-
-        if (fatherObj === undefined) return; // 根文件无法删除
-        for (let index in fatherObj.children) {
-            // console.log(fatherObj.children[index].__path)
-            if (fatherObj.children[index].__path === relativePath) {
-                fatherObj.children.splice(index, 1)
-                return targetObj;
-            }
-        }
-    }
-
-    // 通过文件的相对地址得到文件对象和其父对象
-    __getFileObjByPath(path,root=this.virtualFileObj) {
-        let names = path.split("/");
-        if (path === "/") return { targetObj: root, fatherObj: root };
-
-        let targetObj = undefined;
-        for (let index in names) {
-            for (let json of root.children) {
-                if (json.name === names[index]) {
-                    if (Number(index) === (names.length - 1)) {
-                        targetObj = json
-                        break;
-                    }
-                    if (json.children !== undefined) {
-                        root = json;
-                        break;
-                    }
-                }
-            }
-        }
-        return { targetObj, fatherObj: root };
-    }
-
-    getVirtualFileObj() {
-        return this.virtualFileObj;
-    }
+    getFileContent = (relativePath) => getFileContent(relativePath, this.virtualFiles)
+    setFileContent = (relativePath, content) => setFileContent(relativePath, content, this.virtualFiles)
+    createDir = (virtualPath, dirName) => createDir(virtualPath, dirName, this.virtualFiles)
+    createFile = (virtualPath, fileName,) => createFile(virtualPath, fileName, this.virtualFiles)
+    changeFileContent = (relativePath, newContent) => changeFileContent(relativePath, newContent, this.virtualFiles)
+    renameFile = (relativePath, newName) => renameFile(relativePath, newName, this.virtualFiles)
+    moveFile = (relativePath, newPath) => moveFile(relativePath, newPath, this.virtualFiles)
+    deleteFile = (relativePath) => deleteFile(relativePath, this.virtualFiles)
 }
 
-module.exports = VirtualFileClient;
+
+module.exports = {
+    VirtualFileClient,
+    getFileContent,
+    setFileContent,
+    createDir,
+    createFile,
+    changeFileContent,
+    renameFile,
+    moveFile,
+    deleteFile,
+}
