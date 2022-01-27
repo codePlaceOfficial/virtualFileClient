@@ -45,7 +45,6 @@ const setFileContent = (relativePath, content, virtualFiles) => {
 const createDir = (virtualPath, dirName, virtualFiles) => {
     if (virtualPath === "/" && dirName === "") {
         virtualFileBuilder.buildRootDir(virtualFiles)
-        console.log(virtualFiles);
         // virtualFiles = _.assign(virtualFiles, virtualFileBuilder.buildRootDir()); //构造根文件
     } else {
         let { targetObj } = getVirtualFileByPath(virtualPath, virtualFiles)
