@@ -1,8 +1,8 @@
-// const util = require('util')
 const FILE_TYPE = { dir: "DIR", file: "FILE" };
 const virtualFileBuilder = require("./virtualFileBuilder");
 const { join } = require("../util/path")
 const _ = require("loadsh");
+const parseFileType = require("../util/parseFileType")
 
 /** 
  * ================================================
@@ -66,9 +66,10 @@ const changeFileContent = (virtualPath, newContent, virtualFiles) => {
 // 文件重命名
 const renameFile = (relativePath, newName, virtualFiles) => {
     let { targetObj, fatherObj } = getVirtualFileByPath(relativePath, virtualFiles)
-    // 改名同时更改路径
+    // 改名同时更改与之相关的属性
     targetObj.name = newName
     targetObj.__path = join(fatherObj.__path, newName)
+    targetObj.fileType = parseFileType(newName);
     // 不用assign,否则会和immer产生冲突
     // _.assign(targetObj, { name: newName, __path: join(fatherObj.__path, newName) })
 }
