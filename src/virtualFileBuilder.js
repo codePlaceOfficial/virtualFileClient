@@ -6,7 +6,10 @@ const __buildVirtualFile__ = (type, name, virtualPath, virtualFile) => {
     virtualFile.name = name;
     virtualFile.__path = virtualPath;
     if (type === FILE_TYPE.dir) virtualFile.children = [];
-    if (type === FILE_TYPE.file) virtualFile.fileType = parseFileType(name);
+    if (type === FILE_TYPE.file) {
+        virtualFile.fileType = parseFileType(name);
+        virtualFile.content = "";
+    }
 }
 
 module.exports = {

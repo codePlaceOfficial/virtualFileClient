@@ -25,6 +25,7 @@ const fileTypeMap = {
     ini: "ini",
     java: "java",
     js: "javascript",
+    json:"json",
     julia: "julia",
     kt: "kt",
     less: "less",

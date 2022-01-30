@@ -70,12 +70,13 @@ const changeFileContent = (virtualPath, newContent, virtualFiles) => {
 // 文件重命名
 const renameFile = (relativePath, newName, virtualFiles) => {
     let { targetObj, fatherObj } = getVirtualFileByPath(relativePath, virtualFiles)
+    let newPath = join(fatherObj.__path, newName);
     // 改名同时更改与之相关的属性
     targetObj.name = newName
     targetObj.__path = join(fatherObj.__path, newName)
     targetObj.fileType = parseFileType(newName);
     fatherObj.children = fileSorting(fatherObj.children);
-
+    return {newPath};
     // 不用assign,否则会和immer产生冲突
     // _.assign(targetObj, { name: newName, __path: join(fatherObj.__path, newName) })
 }
@@ -108,10 +109,6 @@ const deleteFile = (relativePath, virtualFiles) => {
 
 class VirtualFileClient {
     constructor() {
-        this.LABEL = "_client" // 用于事件标识
-        // 其实理论上不需言，因为实际应用时client和server应处于不同的环境，
-        // 不需要再加前缀来区分事件，但是为了方便测试，还是加上了
-
         this.virtualFiles = {}
     }
 
