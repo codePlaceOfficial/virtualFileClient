@@ -1,4 +1,3 @@
-const _ = require("loadsh")
 
 const fileTypeMap = {
     abap: "abap",

@@ -4,6 +4,9 @@ const { join } = require("../util/path")
 const _ = require("loadsh");
 const parseFileType = require("../util/parseFileType")
 
+const fileSorting = (fileList) => {
+    return _.orderBy(fileList, [file => file.type === "DIR","name"], ["desc", "asc"]);
+}
 /** 
  * ================================================
  * 虚拟文件的操作 ===================================
@@ -49,12 +52,14 @@ const createDir = (virtualPath, dirName, virtualFiles) => {
     } else {
         let { targetObj } = getVirtualFileByPath(virtualPath, virtualFiles)
         targetObj.children.push(virtualFileBuilder.__buildVirtualFile(FILE_TYPE.dir, dirName, join(virtualPath, dirName)));
+        fileSorting(targetObj.children);
     }
 }
 
 const createFile = (virtualPath, fileName, virtualFiles) => {
     let { targetObj } = getVirtualFileByPath(virtualPath, virtualFiles)
     targetObj.children.push(virtualFileBuilder.__buildVirtualFile(FILE_TYPE.file, fileName, join(virtualPath, fileName)));
+    fileSorting(targetObj.children);
 }
 
 const changeFileContent = (virtualPath, newContent, virtualFiles) => {
@@ -69,6 +74,8 @@ const renameFile = (relativePath, newName, virtualFiles) => {
     targetObj.name = newName
     targetObj.__path = join(fatherObj.__path, newName)
     targetObj.fileType = parseFileType(newName);
+    fileSorting(fatherObj.children);
+
     // 不用assign,否则会和immer产生冲突
     // _.assign(targetObj, { name: newName, __path: join(fatherObj.__path, newName) })
 }
@@ -80,6 +87,8 @@ const moveFile = (relativePath, newPath, virtualFiles) => {
     let beMoveObj = this.deleteFile(relativePath); // 待移动的数据
     beMoveObj.__path = join(newPath, beMoveObj.name); // 构建新的路径
     targetObj.children.push(beMoveObj);
+    fileSorting(targetObj.children);
+
 }
 
 // 文件删除
