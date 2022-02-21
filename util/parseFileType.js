@@ -47,7 +47,7 @@ const fileTypeMap = {
     "ps1": "powershell",
     proto: "protobuf",
     pug: "pug",
-    python: "python",
+    py: "python",
     r: "r",
     redis: "redis",
     rst: "restructuredtext",
